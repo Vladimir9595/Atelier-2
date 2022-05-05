@@ -1,0 +1,56 @@
+1er etape
+Mettre à jours les source qui so,nt les liens vers les libraiie
+
+(dis désinstal / en ajoute)
+
+a2disconf 
+a2dismod
+a2dissite
+a2enconf
+a2enmod
+a2ensite
+a2query
+
+toutes les config sont dans etc
+
+le dossier mods-availeble contient tout les module possible qui existe
+
+php -v savoir si j'ai php
+
+la plus part des localhost 127.0.0.1
+
+la configuration d'apache2 se trouve dans apache2.conf
+
+
+
+pour que apache puisse ouvrir le fichier phpmyadmin sur internet
+aller dans fichier 
+/etc/apache2/sites-available/000-default.conf
+
+ajouter la ligne en dessous dans le fichier
+Include /etc/phpmyadmin/apache.conf
+
+maintenant sur mariadb on connait l'id de phpmyadmin dans mariadb et le mot de passe on l'a créer en installent apache2
+
+CREATE USER 'Victor'@'localhost' IDENTIFIED BY 'p@ssw0rd';
+
+GRANT ALL PRIVILEGES ON . TO 'Victor'@'localhost' WITH GRANT OPTION;
+
+
+
+
+
+on va rajouter utilisateur ubuntu dans le group adm 
+
+sudo adduser ubuntu adm 
+
+changer les droit du dossier var www pour que les utilisateur du group adm puissent le modifier à fin de faire git clone
+sudo chown root:adm  -R /var/www 
+
+Puis on attribut les droit 
+sudo chmod 2775 .
+
+Configuration apache2
+dupliquer
+000-default.conf
+sudo cp 000-default.conf Port foliov1.conf
