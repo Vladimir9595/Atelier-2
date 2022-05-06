@@ -34,7 +34,7 @@ ApacheConfiguration () {
 		sudo a2enmod rewrite
 		sudo service apache2 restart
 
-	        if [ $1 = "dev" ]; then
+	        if [ $1 = "devslam" ]; then
 			    echo "-----------------------------------------------------------";
 				echo "Ajout du port 81 si c'est un environnement de développement";
             	echo "-----------------------------------------------------------";
@@ -94,7 +94,7 @@ ApacheConfiguration () {
 
 		   sudo a2ensite main;
 
-		   if [ $1 = "dev" ]; then
+		   if [ $1 = "devslam" ]; then
 		 	   sudo chown -R ubuntu:www-data /var/www;
 		   elif [ $1 = "test" ]; then
 			   sudo chown -R www-data:www-data /var/www;
@@ -133,8 +133,8 @@ MariaDB () {
 
 			echo "---------------------------------";
 			echo "Configuration de MariaDB terminée";
-			echo "User : alexis";
-			echo "PWD  : alexis";
+			echo "User : vladimir";
+			echo "PWD  : Vladimir*1";
 			echo "DB   : main";
 			echo "acc  : ALL";
 			echo "---------------------------------";
@@ -143,10 +143,10 @@ MariaDB () {
 
 MariaDBConfiguration () {
 
-			sudo mariadb -e "DROP USER IF EXISTS 'alexis'@localhost;";
-			sudo mariadb -e "CREATE USER 'alexis'@localhost IDENTIFIED BY 'alexis';";
-			sudo mariadb -e "CREATE DATABASE IF NOT EXISTS main";
-			sudo mariadb -e "GRANT ALL ON *.* TO 'alexis'@localhost;";
+			sudo mariadb -e "DROP USER IF EXISTS 'vladimir'@'localhost';";
+			sudo mariadb -e "CREATE USER 'vladimir'@'localhost' IDENTIFIED BY 'Vladimir*1';";
+			sudo mariadb -e "CREATE DATABASE IF NOT EXISTS 'main'";
+			sudo mariadb -e "GRANT ALL ON *.* TO 'vladimir'@'localhost';";
 			sudo mariadb -e "FLUSH PRIVILEGES;";
 
 }
@@ -158,6 +158,7 @@ Composer () {
 			echo "------------------------";
 
 		    sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && HASH="$(wget -q -O - https://composer.github.io/installer.sig)" && php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && php composer-setup.php && php -r "unlink('composer-setup.php');" -y
+            sudo mv composer.phar /usr/local/bin/composer
 
 			echo "---------------------------------";
 			echo "Installation de composer terminée";
@@ -177,18 +178,6 @@ xDebug () {
 			echo "-------------------------------";
 
 			xDebugConfiguration;
-
-}
-
-Samba () {
-
-			echo "---------------------";
-			echo "Installation de Samba";
-			echo "---------------------";
-
-			sudo apt install samba -y
-
-			SambaConfiguration;
 
 }
 
@@ -213,39 +202,6 @@ UpdateServer () {
 			echo "-------------------------";
 			echo "Update & Upgrade finished";
 			echo "-------------------------";
-
-}
-
-SetIpStatic () {
-
-            echo "-------------------";
-            echo "Static IP Addresses";
-            echo "-------------------";
-
-			ipv4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1);
-			gateway=$(ip r | awk '/default/' | sed "s/ dev/%/" | sed "s/via /W/" | cut -d '%' -f1 | cut -d 'W' -f2)
-			# cut -f1, récupère la première partie du string, f2 la seconde partie.
-			ipstaticFile=/etc/netplan/60-cloud-init.yaml;
-
-			sudo rm -rf $ipstaticFile;
-			sudo touch $ipstaticFile;
-
-			echo "network:" | sudo tee -a ${ipstaticFile};
-			echo "       renderer: networkd" | sudo tee -a ${ipstaticFile};
-			echo "       version: 2" | sudo tee -a ${ipstaticFile};
-			echo "       ethernets:" | sudo tee -a ${ipstaticFile};
-			echo "            eth0:" | sudo tee -a ${ipstaticFile};
-			echo "                     dhcp4: false" | sudo tee -a ${ipstaticFile};
-			echo "                     addresses: [${ipv4}/20]" | sudo tee -a ${ipstaticFile};
-			echo "                     gateway4: ${gateway}" | sudo tee -a ${ipstaticFile};
-			echo "                     nameservers:" | sudo tee -a ${ipstaticFile};
-			echo "                             addresses: [8.8.8.8]" | sudo tee -a ${ipstaticFile};
-
-			sudo netplan apply;
-
-            echo "--------------------------------------------";
-			echo "L'ip statique a bien été configurée. ${ipv4}";
-            echo "--------------------------------------------";
 
 }
 
@@ -286,36 +242,6 @@ xDebugConfiguration () {
 			echo "--------------------------------";
 			echo "Configuration de xDebug terminée";
 			echo "--------------------------------";
-
-}
-
-SambaConfiguration () {
-
-		echo "-------------------------------------------------------------";
-		echo "Ajout de la configuration du partage dans /etc/samba/smb.conf";
-		echo "-------------------------------------------------------------";
-
-		  if grep -q "dev" "/etc/samba/smb.conf"; then
-                      echo "Samba déjà configuré...";
-          else
-	              echo "";
-	              echo "[dev]" | sudo tee -a /etc/samba/smb.conf;
-	              echo "   comment = Sharing Dev Folder" | sudo tee -a /etc/samba/smb.conf;
-	              echo "   path = /var/www" | sudo tee -a /etc/samba/smb.conf;
-	              echo "   read only = no" | sudo tee -a /etc/samba/smb.conf;
-	              echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf;
-          fi
-
-		echo "-----------------------------------------";
-		echo "SAISISSEZ LE MOT DE PASSE DU COMPTE SAMBA";
-		echo "-----------------------------------------";
-
-		sudo smbpasswd -a ubuntu;
-		sudo service smbd restart;
-
-		echo "--------------------------------------------";
-		echo "Utilisateur ubuntu ajouté aux partages Samba";
-		echo "--------------------------------------------";
 
 }
 
@@ -478,7 +404,7 @@ AddScripts () {
 					sudo chown -R ubuntu:www-data /var/www/main
 
 					echo 'Clone du projet dans /var/www/main'
-					git clone https://github.com/AlxisHenry/CCI-2021-PORTFOLIO.git /var/www/main
+					git clone https://github.com/Vladimir9595/CCI-SIO21-Portfolio.git /var/www/main
 
 					sudo chown -R ubuntu:ubuntu /var/www/main
 					cd /var/www/main
@@ -517,12 +443,12 @@ AddScripts () {
 				echo "# Script passage du code en test à la machine de production via scp." | tee -a ${prodsh}
 				echo "" | tee -a ${prodsh}
 				echo "SendProject () {" | tee -a ${prodsh}
-				echo " ssh ubuntu@92.222.16.109 -p 62303 'sudo mkdir /var/www/main'" | tee -a ${prodsh}
-				echo " ssh ubuntu@92.222.16.109 -p 62303 'sudo chown -R ubuntu:www-data /var/www/main'" | tee -a ${prodsh}
+				#echo " ssh ubuntu@92.222.16.109 -p 62303 'sudo mkdir /var/www/main'" | tee -a ${prodsh}
+				#echo " ssh ubuntu@92.222.16.109 -p 62303 'sudo chown -R ubuntu:www-data /var/www/main'" | tee -a ${prodsh}
 				echo "	echo 'Droit sur /var/www distant attribués à ubuntu'" | tee -a ${prodsh}
-				echo "	rsync -azP --exclude-from '/home/ubuntu/exclude_list' -e 'ssh -p 62303' /var/www/main/ ubuntu@92.222.16.109:/var/www/main" | tee -a ${prodsh}
+				#echo "	rsync -azP --exclude-from '/home/ubuntu/exclude_list' -e 'ssh -p 62303' /var/www/main/ ubuntu@92.222.16.109:/var/www/main" | tee -a ${prodsh}
 				echo "	echo 'Fichiers/Dossiers du projet copiés et envoyés'" | tee -a ${prodsh}
-				echo "	ssh ubuntu@92.222.16.109 -p 62303 'sudo chown -R www-data:www-data /var/www/main'" | tee -a ${prodsh}
+				#echo "	ssh ubuntu@92.222.16.109 -p 62303 'sudo chown -R www-data:www-data /var/www/main'" | tee -a ${prodsh}
 				echo "	echo 'Droit sur /var/www distant attribués à www-data'" | tee -a ${prodsh}
 				echo "}" | tee -a ${prodsh}
 				echo "" | tee -a ${prodsh}
@@ -630,11 +556,11 @@ GithubSshKey () {
 			echo "Configuration de Github";
 			echo "-----------------------";
 
-			git config --global user.name "AlxisHenry";
-			git config --global user.email "alexis.henry150357@gmail.com";
+			git config --global user.name "Vladimir9595";
+			git config --global user.email "alss-sio-slam21-svl@ccicampus.fr";
 
 			# Nécessite de rentrer la clé SSH sur github.
-			# Lors du clône d'un repository, penser à prendre le lien SSH. type : git@github.com:AlxisHenry/Learn-React.git
+			# Lors du clône d'un repository, penser à prendre le lien SSH. type : git@github.com:Vladimir9595/Learn-React.git
 
 }
 
@@ -649,7 +575,7 @@ SshTransfert () {
 
 			ssh-keygen -b 4096 -t rsa -f ${HOME}/.ssh/id_rsa -N ""
 
-			# Nécessite de rentrer la clé SSH sur le serveur de production ainsi que sur le serveur de dev.
+			# Nécessite de rentrer la clé SSH sur le serveur de production ainsi que sur le serveur de devslam.
 			# Les scripts d'envoi ne fonctionneront pas.
 
 }
@@ -707,13 +633,12 @@ LAMP () {
 			echo "                                                        ";
 			echo "--------------------------------------------------------";
 
-			 if [ $1 = "dev" ]; then
+			 if [ $1 = "devslam" ]; then
 			 	UpdateServer;
 			    Apache $1;
 			    PHP;
 			    UpdateServer;
 				MariaDB;
-			 	Samba;
 			 	Composer;
 				xDebug;
 			 	phpMyAdmin;
@@ -763,11 +688,11 @@ type () {
 		while true; do
 			read -p "Sur quelle machine êtes vous ? " machine
 			case $machine in
-				[dev]* ) LAMP "dev"; break;;
+				[devslam]* ) LAMP "devslam"; break;;
 				[test]* ) LAMP "test"; break;;
 				[prod]* ) LAMP "prod"; exit;;
 				[bot]* ) LAMP "bot"; exit;;
-				* ) echo "Répondez par dev, test, prod ou bot.";;
+				* ) echo "Répondez par devslam, test, prod ou bot.";;
 			esac
 		done;
 
