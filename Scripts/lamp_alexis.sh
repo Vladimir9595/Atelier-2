@@ -1,14 +1,5 @@
 #!/bin/bash
 
-UpdateUpgrade () {
-
-            echo "---------------------";
-			echo "Mise à jour des libreries";
-			echo "---------------------";
-
-            sudo apt update && sudo apt upgrade -y
-}
-
 Apache () {
 
 			echo "---------------------";
@@ -25,12 +16,12 @@ ApacheConfiguration () {
 
 		echo "----------------------";
 		echo "Configuration d'Apache";
-        echo "----------------------";
+        echo "----------------------";		
 
 		echo "-------------";
 		echo "URL REWRITING";
-        echo "-------------";
-
+        echo "-------------";		
+		
 		sudo a2enmod rewrite
 		sudo service apache2 restart
 
@@ -50,8 +41,8 @@ ApacheConfiguration () {
 
 		echo "---------------------------------------------------------------";
 		echo "Suppression des fichiers de base de /var/www & Création de main";
-        echo "---------------------------------------------------------------";
-
+        echo "---------------------------------------------------------------";				   
+			
 			sudo rm -rf /var/www/html
 			sudo rm -rf /var/www/main
 			sudo mkdir /var/www/main
@@ -60,7 +51,7 @@ ApacheConfiguration () {
 
 		echo "---------------------------------------------------------------------------";
 		echo "Création du fichier de configuration ${main}";
-        echo "---------------------------------------------------------------------------";
+        echo "---------------------------------------------------------------------------";	
 
 		   echo "Désactivation & Suppression de l'ancien site";
 		   sudo a2dissite 000-default.conf;
@@ -70,7 +61,7 @@ ApacheConfiguration () {
 
 		echo "--------------------------------------------------";
 		echo "Configuration d'un virtual host vers /var/www/main";
-        echo "--------------------------------------------------";
+        echo "--------------------------------------------------";	
 
 		    echo "Configuration d'un virtual host vers /var/www/main.";
 		    echo "<VirtualHost *:80>" | sudo tee -a ${main};
@@ -113,10 +104,17 @@ ApacheConfiguration () {
 PHP () {
 
 			echo "-----------------------";
-			echo "Installation de PHP";
+			echo "Installation de PHP 8.1";
 			echo "-----------------------";
 
-            sudo apt install php-fpm -y
+			sudo apt-get install software-properties-common -y;
+			sudo add-apt-repository ppa:ondrej/php -y;
+			sudo apt-get install php8.1 -y;
+			sudo apt install php8.1-common php8.1-mysql php8.1-xml php8.1-xmlrpc php8.1-curl php8.1-gd php8.1-imagick php8.1-cli php8.1-dev php8.1-imap php8.1-mbstring php8.1-opcache php8.1-soap php8.1-zip php8.1-redis php8.1-intl -y
+
+			echo "--------------------------------";
+			echo "Installation de PHP 8.1 terminée";
+			echo "--------------------------------";
 
 }
 
@@ -127,7 +125,7 @@ MariaDB () {
 	        echo "-----------------------";
 
 	        sudo apt install mariadb-server -y
-			sudo apt install mariadb-client -y
+			sudo apt install mariadb-client-core-10.3 -y
 
 	        MariaDBConfiguration;
 
@@ -157,7 +155,7 @@ Composer () {
 			echo "Installation de composer";
 			echo "------------------------";
 
-		    sudo php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && HASH="$(wget -q -O - https://composer.github.io/installer.sig)" && php -r "if (hash_file('SHA384', 'composer-setup.php') === '$HASH') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && php composer-setup.php && php -r "unlink('composer-setup.php');" -y
+		    sudo curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 
 			echo "---------------------------------";
 			echo "Installation de composer terminée";
@@ -194,11 +192,50 @@ Samba () {
 
 phpMyAdmin () {
 
-			echo "---------------------";
-			echo "Installation de phpMyAdmin";
-			echo "---------------------";
+			echo "--------------------------------";
+			echo "Installation de phpMyAdmin 5.1.3";
+			echo "--------------------------------";
 
-            sudo apt install phpmyadmin -y
+			echo "--------------------------------";
+			echo "Suppresion des anciens fichiers.";
+			echo "--------------------------------";
+			sudo rm -rf /usr/share/phpmyadmin
+			sudo rm -rf /var/lib/phpmyadmin/tmp
+
+			echo "------------------------------------------------------------------------";
+			echo "Récupération de la denière version de PMA, tar du dossier & suppression.";
+			echo "------------------------------------------------------------------------";
+			sudo wget https://files.phpmyadmin.net/phpMyAdmin/5.1.3/phpMyAdmin-5.1.3-english.tar.gz
+			sudo tar -xf phpMyAdmin-5.1.3-english.tar.gz
+			rm -rf phpMyAdmin-5.1.3-english.tar.gz
+			echo "---------------------------------------------------------------------------------";
+			echo "Récupération de la denière version de PMA, tar du dossier & suppression terminés.";
+			echo "---------------------------------------------------------------------------------";
+
+			echo "----------------------------------------------------------------------";
+			echo "Création & déplacement de tous les fichiers dans /usr/share/phpmyadmin";
+			echo "----------------------------------------------------------------------";
+			sudo mkdir /usr/share/phpmyadmin
+			sudo mv phpMyAdmin-5.1.3-english/* /usr/share/phpmyadmin/
+			echo "----------------------------------------------------------------";
+			echo "Création des dossiers et changement des droits PMA dans /var/lib";
+			echo "----------------------------------------------------------------";
+			sudo mkdir -p /var/lib/phpmyadmin/tmp
+			sudo chown -R www-data:www-data /var/lib/phpmyadmin
+			echo "----------------------------------";
+			echo "Création du fichier config.inc.php";
+			echo "----------------------------------";
+			sudo cp /usr/share/phpmyadmin/config.sample.inc.php /usr/share/phpmyadmin/config.inc.php
+			echo "--------------------------------";
+			echo "Suppression de l'ancien dossier et lancement de la configuration.";
+			echo "--------------------------------";
+			sudo rm -rf phpMyAdmin-5.1.3-english
+
+			phpMyAdminConfiguration;
+
+			echo "-----------------------------------------";
+			echo "Installation de phpMyAdmin 5.1.3 terminée";
+			echo "-----------------------------------------";
 
 }
 
@@ -261,7 +298,7 @@ AvahiDeamon () {
 	sudo apt-get install avahi-daemon -y
 
 	echo "---------------------";
-    echo "Avahi-Deamon installé";
+    echo "Avahi-Deamon installé"; 
     echo "---------------------";
 }
 
@@ -273,13 +310,12 @@ xDebugConfiguration () {
 
 			# https://stackoverflow.com/questions/53133005/how-to-install-xdebug-on-ubuntu
 			# https://blog.pascal-martin.fr/post/xdebug-installation-premiers-pas/#installation-xdebug-linux
-            # https://lucidar.me/fr/aws-cloud9/how-to-install-and-configure-xdebug-on-ubuntu/
 
-			php_ini=/etc/php/7.4/cli/php.ini
-			xdebug_file=/etc/php/7.4/mods-available/xdebug.ini
+			php_ini=/etc/php/8.1/cli/php.ini
+			xdebug_file=/etc/php/8.1/mods-available/xdebug.ini
 
-			echo "display_errors = On" | sudo tee -a ${php_ini}
-			echo "html_errors = On" | sudo tee -a ${php_ini}
+			echo "display_errors = On" | sudo tee -a ${php_ini} 
+			echo "html_errors = On" | sudo tee -a ${php_ini} 
 
 			sudo systemctl restart apache2
 
@@ -337,7 +373,7 @@ phpMyAdminConfiguration () {
 		echo "-----------------------------------------------------------------------";
 		echo "Suppression des anciens fichiers. Création du nouveau fichier ${config}";
 		echo "-----------------------------------------------------------------------";
-
+	
 		sudo a2disconf phpmyadmin;
 		sudo rm ${config};
 		sudo touch ${config};
@@ -429,7 +465,7 @@ AddScripts () {
 				echo "   echo '------------------------------';" | tee -a ${upsync}
 				echo "   echo 'Mise à jour en cours du projet';" | tee -a ${upsync}
 				echo "   echo '------------------------------';" | tee -a ${upsync}
-				echo "   sudo rsync -azP --exclude-from '/home/ubuntu/exclude_list' -e 'ssh -i .ssh/id_rsa' ubuntu@devslam.local:/var/www/main/ /var/www/main" | tee -a ${upsync}
+				echo "   sudo rsync -azP --exclude-from '/home/ubuntu/exclude_list' -e 'ssh -i .ssh/id_rsa' ubuntu@dev.local:/var/www/main/ /var/www/main" | tee -a ${upsync}
 				echo "   cd /var/www/main" | tee -a ${upsync}
 				echo "   sudo npm install" | tee -a ${upsync}
 				echo "   cd" | tee -a ${upsync}
@@ -513,7 +549,7 @@ AddScripts () {
 
 			sudo rm -rf $HOME/prod.sh;
 			prodsh=$HOME/prod.sh;
-
+		
 				echo "# Script passage du code en test à la machine de production via scp." | tee -a ${prodsh}
 				echo "" | tee -a ${prodsh}
 				echo "SendProject () {" | tee -a ${prodsh}
@@ -531,7 +567,7 @@ AddScripts () {
 				echo "echo '---------------------------------------------------';" | tee -a ${prodsh}
 				echo "" | tee -a ${prodsh}
 				echo "SendProject;" | tee -a ${prodsh}
-				echo "" | tee -a ${prodsh}
+				echo "" | tee -a ${prodsh}	
 				echo "echo '----------------------------';" | tee -a ${prodsh}
 				echo "echo 'Projet envoyé en production.';" | tee -a ${prodsh}
 				echo "echo '----------------------------';" | tee -a ${prodsh}
@@ -551,7 +587,7 @@ AddScripts () {
 					sudo chown -R ubuntu:www-data /var/www/main
 
 					echo 'Clone du projet dans /var/www/main'
-					git clone https://github.com/Vladimir9595/CCI-SIO21-Portfolio.git /var/www/main
+					git clone https://github.com/AlxisHenry/CCI-2021-PORTFOLIO.git /var/www/main
 
 					sudo chown -R ubuntu:ubuntu /var/www/main
 					cd /var/www/main
@@ -633,9 +669,8 @@ GithubSshKey () {
 			git config --global user.name "AlxisHenry";
 			git config --global user.email "alexis.henry150357@gmail.com";
 
-		# Nécessite de rentrer la clé SSH sur github.
-	# Lors du clône d'un repository, penser à prendre le lien SSH. type : git@github.com:Vladimir9595/(mettre le repotisory).git
-    # Pour la machine de prod generer une clé SSH dans la test et mettre la clé dans le dossier "home/.ssh/authorized_keys" dans la prod
+			# Nécessite de rentrer la clé SSH sur github.
+			# Lors du clône d'un repository, penser à prendre le lien SSH. type : git@github.com:AlxisHenry/Learn-React.git
 
 }
 
@@ -649,7 +684,7 @@ SshTransfert () {
 			sudo rm -rf ${HOME}/.ssh/id_rsa.pub
 
 			ssh-keygen -b 4096 -t rsa -f ${HOME}/.ssh/id_rsa -N ""
-
+			
 			# Nécessite de rentrer la clé SSH sur le serveur de production ainsi que sur le serveur de dev.
 			# Les scripts d'envoi ne fonctionneront pas.
 
@@ -666,10 +701,10 @@ Reboot () {
 				sleep 1;
 			done
 
-		 sudo shutdown -r now;
-
+		 sudo shutdown -r now; 
+	
 	 # Redémarre nécessaire pour appliquer les changements.
-
+	 
 }
 
 NodeJS () {
@@ -679,7 +714,7 @@ NodeJS () {
 	echo "-------------------------------------";
 
 	curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
-
+	
 	sudo apt-get install -y nodejs -y
 
 }
@@ -690,7 +725,7 @@ NPM () {
 	echo "Installation de NPM";
 	echo "-------------------";
 
-	sudo apt-get install npm -y
+	sudo apt-get install npm -y	
 
 	echo "------------------";
 	echo "Update NPM lastest";
@@ -773,3 +808,5 @@ type () {
 		done;
 
 }
+
+type
