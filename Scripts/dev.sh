@@ -222,24 +222,23 @@ SambaConfiguration () {
 	echo "Ajout de la configuration du partage dans /etc/samba/smb.conf";
 	echo "-------------------------------------------------------------";
 
-	echo "";
-	echo "[dev]" | sudo tee -a /etc/samba/smb.conf;
-	echo "   comment = Sharing Dev Folder" | sudo tee -a /etc/samba/smb.conf;
-	echo "   path = /var/www" | sudo tee -a /etc/samba/smb.conf;
-	echo "   read only = no" | sudo tee -a /etc/samba/smb.conf;
-	echo "   browseable = yes" | sudo tee -a /etc/samba/smb.conf;
-          fi
+	sudo sed -i '242i\ ""' | sudo tee -a /etc/samba/smb.conf;
+	sudo sed -i '243i\ "[Portfolio]"' | sudo tee -a /etc/samba/smb.conf;
+	sudo sed -i '244i\ "   comment = Partage Portfolio"' | sudo tee -a /etc/samba/smb.conf;
+	sudo sed -i '245i\ "   path = /var/www/CCI-SIO21-Portfolio"' | sudo tee -a /etc/samba/smb.conf;
+	sudo sed -i '246i\ "   read only = no"' | sudo tee -a /etc/samba/smb.conf;
+	sudo sed -i '247i\ "   browseable = yes"' | sudo tee -a /etc/samba/smb.conf;
 
-		echo "-----------------------------------------";
-		echo "SAISISSEZ LE MOT DE PASSE DU COMPTE SAMBA";
-		echo "-----------------------------------------";
+    echo "-----------------------------------------";
+	echo "SAISISSEZ LE MOT DE PASSE DU COMPTE SAMBA";
+	echo "-----------------------------------------";
 
-		sudo smbpasswd -a ubuntu;
-		sudo service smbd restart;
+	sudo smbpasswd -a ubuntu;
+	sudo service smbd restart;
 
-		echo "--------------------------------------------";
-		echo "Utilisateur ubuntu ajouté aux partages Samba";
-		echo "--------------------------------------------";
+	echo "--------------------------------------------";
+	echo "Utilisateur ubuntu ajouté aux partages Samba";
+	echo "--------------------------------------------";
 
 }
 
