@@ -124,8 +124,8 @@ MariaDBConfiguration () {
 
 	sudo mariadb -e "DROP USER IF EXISTS 'vladimir'@'localhost';";
 	sudo mariadb -e "CREATE USER 'vladimir'@'localhost' IDENTIFIED BY 'Vladimir*1';";
-    sudo mariadb -e "DROP DATABASE IF EXISTS Portfolio;";
-    sudo mariadb -e "CREATE DATABASE IF NOT EXISTS Portfolio;";
+    sudo mariadb -e "DROP DATABASE IF EXISTS portfolio;";
+    sudo mariadb -e "CREATE DATABASE IF NOT EXISTS portfolio;";
 	sudo mariadb -e "GRANT ALL ON *.* TO 'vladimir'@'localhost';";
 	sudo mariadb -e "FLUSH PRIVILEGES;";
 };

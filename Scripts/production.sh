@@ -16,7 +16,7 @@ Install () {
 	echo "Installation d'Apache - PHP - MariaDB";
 	echo "---------------------";
 
-	sudo apt install apache2 php -y php-fpm -y mariadb-server -y mariadb-client;
+	sudo apt install apache2 php -y php-fpm -y mariadb-server -y mariadb-client -y php-mysql -y;
 
     sudo a2enmod proxy_fcgi setenvif;
     sudo a2enconf php7.4-fpm;
@@ -25,6 +25,17 @@ Install () {
 
 };
 Install;
+
+MariaDBConfiguration () {
+
+	sudo mariadb -e "DROP USER IF EXISTS 'vladimir'@'localhost';";
+	sudo mariadb -e "CREATE USER 'vladimir'@'localhost' IDENTIFIED BY 'Vladimir*1';";
+    sudo mariadb -e "DROP DATABASE IF EXISTS portfolio;";
+    sudo mariadb -e "CREATE DATABASE IF NOT EXISTS portfolio;";
+	sudo mariadb -e "GRANT ALL ON *.* TO 'vladimir'@'localhost';";
+	sudo mariadb -e "FLUSH PRIVILEGES;";
+};
+MariaDBConfiguration;
 
 
 UpdateUpgrade () {
